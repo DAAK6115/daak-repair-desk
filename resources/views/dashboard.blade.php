@@ -1,71 +1,79 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <title>Dashboard - DAAK Repair Desk</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@extends('layouts.app')
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f8fafc;
-            color: #111827;
-        }
+@section('title', 'Tableau de bord')
 
-        .topbar {
-            background: #0f172a;
-            color: white;
-            padding: 18px 32px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .container {
-            padding: 32px;
-        }
-
-        .card {
-            background: white;
-            padding: 24px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
-        }
-
-        .btn {
-            border: none;
-            border-radius: 8px;
-            padding: 10px 14px;
-            background: #ef4444;
-            color: white;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .btn:hover {
-            background: #dc2626;
-        }
-    </style>
-</head>
-<body>
-    <div class="topbar">
+@section('content')
+    <div class="page-header">
         <div>
-            <strong>DAAK Repair Desk</strong>
+            <h2>Tableau de bord</h2>
+            <p class="muted">Bienvenue, {{ auth()->user()->name }}.</p>
         </div>
 
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button class="btn" type="submit">Déconnexion</button>
-        </form>
+        <a class="btn btn-primary" href="{{ route('repairs.create') }}">
+            Nouveau dépôt
+        </a>
     </div>
 
-    <div class="container">
-        <div class="card">
-            <h1>Tableau de bord</h1>
-            <p>Bienvenue, {{ auth()->user()->name }}.</p>
-            <p>La connexion username + mot de passe fonctionne correctement.</p>
+    <div class="grid grid-5" style="margin-bottom: 24px;">
+        <div class="stat-card">
+            <span>Dépôts du jour</span>
+            <strong>{{ $stats['today'] }}</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>En diagnostic</span>
+            <strong>{{ $stats['diagnosis'] }}</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>En réparation</span>
+            <strong>{{ $stats['repairing'] }}</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Prêts</span>
+            <strong>{{ $stats['ready'] }}</strong>
+        </div>
+
+        <div class="stat-card">
+            <span>Livrés</span>
+            <strong>{{ $stats['delivered'] }}</strong>
         </div>
     </div>
-</body>
-</html>
+
+    <div class="card">
+        <h3>Derniers dépôts</h3>
+
+        <table>
+            <thead>
+            <tr>
+                <th>Reçu</th>
+                <th>Client</th>
+                <th>Appareil</th>
+                <th>Statut</th>
+                <th>Date</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            @forelse ($latestRepairs as $repair)
+                <tr>
+                    <td>{{ $repair->receipt_number }}</td>
+                    <td>{{ $repair->client->full_name }}</td>
+                    <td>{{ $repair->device->brand }} {{ $repair->device->model }}</td>
+                    <td><span class="badge">{{ $repair->status }}</span></td>
+                    <td>{{ optional($repair->deposit_date)->format('d/m/Y H:i') }}</td>
+                    <td>
+                        <a href="{{ route('repairs.show', $repair) }}">Voir</a>
+                    </td>
+                </tr>
+            @empty
+                <tr>
+                    <td colspan="6" class="muted">Aucun dépôt enregistré pour le moment.</td>
+                </tr>
+            @endforelse
+            </tbody>
+        </table>
+    </div>
+@endsection
